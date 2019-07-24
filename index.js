@@ -20,9 +20,21 @@ bot.once('ready', () => {
 
     // Crea un canal dedicado para el bot al iniciar.
     console.log(`Conectado al servidor como: ${bot.user.tag}`);
+
     if(!bot.guilds.first().channels.exists('name','path-of-exile-bot')) {
-        bot.guilds.first().createChannel('path-of-exile-bot', { type: 'text' })
+        bot.guilds.first().createChannel('path-of-exile-bot', { type: 'text' });
     }
+
+    const configureMessage = new Discord.RichEmbed()
+        .setColor('#fea91a')
+        .addBlankField()
+        .setTitle('Antes de continuar debes hacer un par de configuraciones!')
+        .addField('Para configurar tu league escribe:','.config league [Legion]')
+        .addField('Indica cada cuanto quieres refrescar la información (minutos):','.config refresh [10]')
+        .addBlankField()
+        .setFooter('Cuando acabes de configurarme podrás comenzar.');
+	
+    bot.channels.find('name','path-of-exile-bot').send(configureMessage);
 
 });
 
@@ -32,7 +44,7 @@ bot.once('ready', () => {
 bot.on('message', async message => {
 
 	// Comprobamos que se llame al bot con el prefix correspondiente, así como dividir el comando de los argumentos.
-	if (!message.content.startsWith('!') || message.author.bot) return;
+    if (!message.content.startsWith('.') || message.author.bot || message.channel.name != 'path-of-exile-bot') return;
 	const args = message.content.slice(1).split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
