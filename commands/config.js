@@ -9,7 +9,7 @@ module.exports = {
         // Si no tiene dos argumentos saldremos del comando.
         if (args.length < 2) return;
 
-        const posibleLeagues = ['Legion', 'HC Legion', 'Standard', 'Hardcore']
+        const posibleLeagues = ['Legion', 'HCL', 'Standard', 'Hardcore']
         const configFile = JSON.parse(fs.readFileSync('config.json'));
 
         if (args[0] == 'league') {
@@ -20,26 +20,27 @@ module.exports = {
                 // Escribimos la nueva configuración.
                 configFile.league = posibleLeagues[leaguePosition];
                 fs.writeFile('config.json', JSON.stringify(configFile), function (err) { 
-                    return (err) ? console.log(err) : message.channel.send('Configuración establecida con exito!');
+                    return (err) ? console.log(err) : message.reply('Configuración Actualizada!');
                 });
 
             } else {
 
-                return message.channel.send('La configuración no se ha podido establecer!');
+                return message.reply('Oh, Oh! No ha sido posible actualizar la configuración!');
                 
             }
+            
 
         } else if (args[0] == 'refresh') {
 
             const refreshMins = args[1].match(/\[(.*?)\]/)[1];
 
             // Comprobamos si lo introducido puede ser convertido a numero.
-            if (isNaN(refreshMins)) return message.channel.send('La configuración no se ha podido establecer!');
+            if (isNaN(refreshMins)) return message.reply('Oh, Oh! No ha sido posible actualizar la configuración!');
             
             // Escribimos la nueva configuración.
             configFile.refresh = refreshMins;
             fs.writeFile('config.json', JSON.stringify(configFile), function (err) { 
-                return (err) ? console.log(err) : message.channel.send('Configuración establecida con exito!');
+                return (err) ? console.log(err) : message.reply('Configuración Actualizada!');
             });
 
         }
