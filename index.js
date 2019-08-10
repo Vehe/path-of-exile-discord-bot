@@ -45,24 +45,24 @@ bot.once('ready', () => {
  */
 bot.on('message', async message => {
 
-	// Comprobamos que se llame al bot con el prefix correspondiente, así como dividir el comando de los argumentos.
+    // Comprobamos que se llame al bot con el prefix correspondiente, así como dividir el comando de los argumentos.
     if (!message.content.startsWith('.') || message.author.bot || message.channel.name != 'path-of-exile-bot') return;
-	const args = message.content.slice(1).split(/ +/);
+    const args = message.content.slice(1).split(/ +/);
     const commandName = args.shift().toLowerCase();
 
     // Comprobamos si esta configurada la league.
     if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
     
     if (!bot.commands.has(commandName)) return;
-	const command = bot.commands.get(commandName);
+    const command = bot.commands.get(commandName);
 
-	// Intentamos ejecutar el comando input del usuario, y le hacemos un catch al error.
-	try {
-		command.execute(message, args);
-	} catch (error) {
-		console.error(error);
-		message.reply('Ops! Ha habido algún error al ejecutar el comando!');
-	}
+    // Intentamos ejecutar el comando input del usuario, y le hacemos un catch al error.
+    try {
+        command.execute(message, args);
+    } catch (error) {
+        console.error(error);
+        message.reply('Ops! Ha habido algún error al ejecutar el comando!');
+    }
 
 });
 
