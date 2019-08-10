@@ -8,12 +8,13 @@ module.exports = {
     {
         if (args.length < 1) return help();
 
+        // Seleccionamos las alertas del cliente actual.
         const alertsMap = message.client.alerts;
         const serverAlerts = alertsMap.get(message.guild.id);
 
         if(args[0] == 'status')
         {
-
+            // Base del mensaje.
             let alertBuildMessage = {
                 color: 0x00aedb,
                 author: {
@@ -25,11 +26,16 @@ module.exports = {
                 }
             }
 
+            /**
+             * Muestra al usuario las aletas que tiene activas en este momento.
+             */
             serverAlerts ? alertBuildMessage.fields = serverAlerts : alertBuildMessage.description = 'No tienes alertas activas!';
-
             return message.channel.send({"embed":alertBuildMessage});
         }
 
+        /**
+         * Mensaje de ayuda para las alertas.
+         */
         function help() 
         {
             const configUsage = new Discord.RichEmbed()

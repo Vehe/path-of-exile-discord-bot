@@ -24,9 +24,14 @@ module.exports = {
         {
             const leaguePosition = posibleLeagues.indexOf(args[1].toLowerCase());
 
+            // Busca el argumento en el listado de posibles leagues.
             if (leaguePosition > -1) 
             {
                 message.client.league = posibleLeagues[leaguePosition]
+
+                /**
+                 * Muestra un mensaje indicando que la configuración se ha establecido con exito.
+                 */
                 return message.channel.send({
                     "embed": {
                             color: 0x32ff6a,
@@ -42,6 +47,9 @@ module.exports = {
             } 
             else 
             {
+                /**
+                 * Muestra un error en caso de no poder actualizar la configuración.
+                 */
                 return message.channel.send({
                     "embed": {
                             color: 0xcc2a36,
@@ -61,9 +69,14 @@ module.exports = {
         {
             const refreshMins = args[1];
 
+            // Comprueba si el argumento es número.
             if (!isNaN(refreshMins))
             {
                 message.client.refresh = refreshMins;
+
+                /**
+                 * Muestra un mensaje indicando que la configuración se ha establecido con exito.
+                 */
                 return message.channel.send({
                     "embed": {
                             color: 0x32ff6a,
@@ -79,6 +92,9 @@ module.exports = {
             } 
             else
             {
+                /**
+                 * Muestra un error en caso de no poder actualizar la configuración.
+                 */
                 return message.channel.send({
                     "embed": {
                             color: 0xcc2a36,
@@ -95,6 +111,9 @@ module.exports = {
         }
         else if(args[0] == 'actual')
         {
+            /**
+             * Muestra la configuración actual del bot.
+             */
             return message.channel.send({
                 "embed": {
                         color: 0x00aedb,
@@ -123,6 +142,9 @@ module.exports = {
             return help();
         }
 
+        /**
+         * Mensaje de ayuda para la config.
+         */
         function help() 
         {
             const configUsage = new Discord.RichEmbed()

@@ -24,10 +24,14 @@ bot.once('ready', () => {
     // Crea un canal dedicado para el bot al iniciar.
     console.log(`Conectado al servidor como: ${bot.user.tag}`);
 
+    // Crea un canal para que hable el bot.
     if(!bot.guilds.first().channels.exists('name','path-of-exile-bot')) {
         bot.guilds.first().createChannel('path-of-exile-bot', { type: 'text' });
     }
 
+    /**
+     * Crea el mensaje de información inicial.
+     */
     const configureMessage = new Discord.RichEmbed()
         .setColor('#bf0a30')
         .setAuthor('Path Of Exile BOT','https://www.pathofexile.com/image/war/logo.png')
@@ -35,6 +39,7 @@ bot.once('ready', () => {
         .addField('Antes de continuar debes hacer un par de configuraciones!','Escribe \'.config help\' para ver la ayuda.')
         .setFooter('Cuando acabes de configurarme podrás comenzar.');
 
+    // Envía el mensaje al chat del bot.
     setTimeout(function() {
         bot.channels.find('name','path-of-exile-bot').send(configureMessage);
     }, 500);
