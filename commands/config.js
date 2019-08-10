@@ -1,8 +1,8 @@
 const Discord = require('discord.js');
 
 module.exports = {
-	name: 'config',
-	usage: '.config',
+    name: 'config',
+    usage: '.config',
     description: 'Se utiliza para la configuración inicial del bot.',
     execute(message, args) 
     {

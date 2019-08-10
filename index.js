@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 const bot = new Discord.Client();
 
 bot.commands = new Discord.Collection();
+bot.alerts = new Map();
 bot.league = null;
 bot.refresh = null;
 
@@ -51,7 +52,7 @@ bot.on('message', async message => {
     const commandName = args.shift().toLowerCase();
 
     // Comprobamos si esta configurada la league.
-    if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
+    //if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
     
     if (!bot.commands.has(commandName)) return;
     const command = bot.commands.get(commandName);
