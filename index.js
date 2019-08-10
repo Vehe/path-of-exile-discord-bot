@@ -1,8 +1,10 @@
 const fs = require('fs');
 const Discord = require('discord.js');
-
 const bot = new Discord.Client();
+
 bot.commands = new Discord.Collection();
+bot.league = null;
+bot.refresh = null;
 
 /**
  * Busca en la carpeta commands todos los archivos JS y los almacena en una collection.
@@ -26,15 +28,15 @@ bot.once('ready', () => {
     }
 
     const configureMessage = new Discord.RichEmbed()
-        .setColor('#fea91a')
-        .addBlankField()
-        .setTitle('Antes de continuar debes hacer un par de configuraciones!')
-        .addField('Para configurar tu league escribe:','.config league [Legion]')
-        .addField('Indica cada cuanto quieres refrescar la información (minutos):','.config refresh [10]')
-        .addBlankField()
+        .setColor('#bf0a30')
+        .setAuthor('Path Of Exile BOT','https://www.pathofexile.com/image/war/logo.png')
+        .setThumbnail('https://www.pathofexile.com/image/war/logo.png')
+        .addField('Antes de continuar debes hacer un par de configuraciones!','Escribe \'.config help\' para ver la ayuda.')
         .setFooter('Cuando acabes de configurarme podrás comenzar.');
-	
-    bot.channels.find('name','path-of-exile-bot').send(configureMessage);
+
+    setTimeout(function() {
+        bot.channels.find('name','path-of-exile-bot').send(configureMessage);
+    }, 500);
 
 });
 
@@ -46,9 +48,12 @@ bot.on('message', async message => {
 	// Comprobamos que se llame al bot con el prefix correspondiente, así como dividir el comando de los argumentos.
     if (!message.content.startsWith('.') || message.author.bot || message.channel.name != 'path-of-exile-bot') return;
 	const args = message.content.slice(1).split(/ +/);
-	const commandName = args.shift().toLowerCase();
+    const commandName = args.shift().toLowerCase();
 
-	if (!bot.commands.has(commandName)) return;
+    // Comprobamos si esta configurada la league.
+    if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
+    
+    if (!bot.commands.has(commandName)) return;
 	const command = bot.commands.get(commandName);
 
 	// Intentamos ejecutar el comando input del usuario, y le hacemos un catch al error.
