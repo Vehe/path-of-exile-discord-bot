@@ -42,7 +42,7 @@ bot.once('ready', () => {
     // Envía el mensaje al chat del bot.
     setTimeout(function() {
         bot.channels.find('name','path-of-exile-bot').send(configureMessage);
-    }, 500);
+    }, 1000);
 
 });
 

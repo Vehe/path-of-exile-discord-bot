@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const request = require('request');
 
 module.exports = {
     name: 'alerts',
@@ -32,6 +33,14 @@ module.exports = {
             serverAlerts ? alertBuildMessage.fields = serverAlerts : alertBuildMessage.description = 'No tienes alertas activas!';
             return message.channel.send({"embed":alertBuildMessage});
         }
+        else if(args[0] == 'set')
+        {
+            var userItem;
+
+            (args[1].startsWith('[') && args[2].endsWith(']')) ? userItem = args[1].concat(args[2]) : userItem = args[1];
+            
+            // TODO:
+        }
 
         /**
          * Mensaje de ayuda para las alertas.
@@ -46,7 +55,7 @@ module.exports = {
 
             message.channel.send(configUsage);
         }
-
+        
     },
 
 };
