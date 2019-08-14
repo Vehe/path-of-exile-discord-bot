@@ -31,22 +31,21 @@ bot.once('ready', () => {
     console.log(`Conectado al servidor como: ${bot.user.tag}`);
 
     // Nos conectamos a la base de datos mongodb.
-    MongoClient.connect(uri,{ useUnifiedTopology: true }, function(err, client) {
+    const client = new MongoClient(uri, { useNewUrlParser: true });
+
+    client.connect(err => {
 
         if(err) return bot.mongostatus = false;
-        bot.mongostatus = true;
 
-        // Guardamos la base de datos como atributo del bot.
+        bot.mongostatus = true;
         bot.db = client.db('items')
 
-        // Cambiamos el estado en caso de no tener acceso a la base de datos.
-        client.on('close', function() {
+        client.on('close', function () {
             bot.mongostatus = false;
-            console.log('Se ha perdido la conexion con la base de datos.');  
+            console.log('Se ha perdido la conexion con la base de datos.');
         });
-
-        // Cambiamos el estado en cuando recuperamos el acceso a la base de datos.
-        client.on('reconnect', function() {
+    
+        client.on('reconnect', function () {
             bot.mongostatus = true;
             console.log('Se ha recuperado la conexion con la base de datos.');
         });
