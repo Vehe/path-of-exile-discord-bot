@@ -13,7 +13,10 @@ bot.mongostatus = true;
 bot.db = null;
 
 // Mongo server
-const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_URL}/?retryWrites=true&w=majority`;
+//const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_URL}/?retryWrites=true&w=majority`;
+
+// DEBUG DB
+const uri = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PW}@192.168.1.112/`;
 
 /**
  * Busca en la carpeta commands todos los archivos JS y los almacena en una collection.
@@ -28,14 +31,12 @@ for (const file of commandFiles) {
  * Se ejecuta cuando se conecta el bot al servidor.
  */
 bot.once('ready', () => {
-
-    bot.guilds.forEach(x => {
-        bot.alerts.set(x.id, []);
+    
+    bot.guilds.forEach(guild => {
+        if(!guild.channels.exists('name','path-of-exile-bot')) {
+            guild.createChannel('path-of-exile-bot', { type: 'text' });
+        }
     });
-
-    if(!bot.guilds.first().channels.exists('name','path-of-exile-bot')) {
-        bot.guilds.first().createChannel('path-of-exile-bot', { type: 'text' });
-    }
 
     const configureMessage = new Discord.RichEmbed()
         .setColor('#bf0a30')
@@ -45,7 +46,9 @@ bot.once('ready', () => {
         .setFooter('Cuando acabes de configurarme podrás comenzar.');
 
     setTimeout(function() {
-        bot.channels.find('name','path-of-exile-bot').send(configureMessage);
+        bot.channels.findAll('name','path-of-exile-bot').forEach(channel => {
+            channel.send(configureMessage)
+        });
     }, 2000);
 
     connectToDB();
