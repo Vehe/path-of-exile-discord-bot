@@ -109,10 +109,11 @@ module.exports = {
                     });
             }
         }
-        else if(args[0] == 'actual')
+        else if(args[0] == 'status')
         {
             /**
              * Muestra la configuración actual del bot.
+             * ! IMPROVE MESSAGE
              */
             return message.channel.send({
                 "embed": {
@@ -133,10 +134,6 @@ module.exports = {
                     }
                 });
         }
-        else if(args[0] == 'help')
-        {
-            return help();
-        }
         else 
         {
             return help();
@@ -150,6 +147,7 @@ module.exports = {
             const configUsage = new Discord.RichEmbed()
                 .setColor('#bf0a30')
                 .setAuthor('Path Of Exile BOT', images.poe_logo)
+                .setDescription('Leagues disponibles: legion, hcl, standard, hardcore.')
                 .setThumbnail(images.poe_logo)
                 .addField('Para configurar tu league escribe:','.config league <legion>')
                 .addField('Indica cada cuanto quieres refrescar la información (minutos):','.config refresh <10>')

@@ -7,11 +7,12 @@ bot.commands = new Discord.Collection();
 bot.alerts = new Map();
 bot.league = null;
 bot.refresh = null;
-bot.mongostatus = false;
+bot.mongostatus = true;
 bot.db = null;
 
 // Mongo server
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_URL}/?retryWrites=true&w=majority`;
+
 
 /**
  * Busca en la carpeta commands todos los archivos JS y los almacena en una collection.
@@ -27,39 +28,10 @@ for (const file of commandFiles) {
  */
 bot.once('ready', () => {
 
-    // Crea un canal dedicado para el bot al iniciar.
-    console.log(`Conectado al servidor como: ${bot.user.tag}`);
-
-    // Nos conectamos a la base de datos mongodb.
-    const client = new MongoClient(uri, { useNewUrlParser: true });
-
-    client.connect(err => {
-
-        if(err) return bot.mongostatus = false;
-
-        bot.mongostatus = true;
-        bot.db = client.db('items')
-
-        client.on('close', function () {
-            bot.mongostatus = false;
-            console.log('Se ha perdido la conexion con la base de datos.');
-        });
-    
-        client.on('reconnect', function () {
-            bot.mongostatus = true;
-            console.log('Se ha recuperado la conexion con la base de datos.');
-        });
-
-    });
-
-    // Crea un canal para que hable el bot.
     if(!bot.guilds.first().channels.exists('name','path-of-exile-bot')) {
         bot.guilds.first().createChannel('path-of-exile-bot', { type: 'text' });
     }
 
-    /**
-     * Crea el mensaje de información inicial.
-     */
     const configureMessage = new Discord.RichEmbed()
         .setColor('#bf0a30')
         .setAuthor('Path Of Exile BOT','https://www.pathofexile.com/image/war/logo.png')
@@ -67,10 +39,11 @@ bot.once('ready', () => {
         .addField('Antes de continuar debes hacer un par de configuraciones!','Escribe \'.config help\' para ver la ayuda.')
         .setFooter('Cuando acabes de configurarme podrás comenzar.');
 
-    // Envía el mensaje al chat del bot.
     setTimeout(function() {
         bot.channels.find('name','path-of-exile-bot').send(configureMessage);
     }, 2000);
+
+    connectToDB();
 
 });
 
@@ -85,7 +58,7 @@ bot.on('message', async message => {
     const commandName = args.shift().toLowerCase();
 
     // Comprobamos si esta configurada la league.
-    //if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
+    if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
     
     if (!bot.commands.has(commandName)) return;
     const command = bot.commands.get(commandName);
@@ -99,5 +72,53 @@ bot.on('message', async message => {
     }
 
 });
+
+/**
+ * Iniciamos la conexión con la base de datos.
+ * ! FIX: No reconecta cuanodo al iniciar el bot la base de datos esta caida.
+ */
+function connectToDB()
+{
+    const noConnectionMessage = new Discord.RichEmbed()
+        .setColor('#eac100')
+        .setAuthor('Path Of Exile BOT - Info','https://www.pathofexile.com/image/war/logo.png')
+        .setThumbnail('https://www.pathofexile.com/image/war/logo.png')
+        .addField('Parece que se ha perdido conexión con la base de datos!','Estamos intentando recuperar la conexión.')
+        .setFooter('Ten paciencia porfavor.');
+    
+    const connectionMessage = new Discord.RichEmbed()
+        .setColor('#85ef47')
+        .setAuthor('Path Of Exile BOT - Info','https://www.pathofexile.com/image/war/logo.png')
+        .setThumbnail('https://www.pathofexile.com/image/war/logo.png')
+        .addField('Se ha restablecido la conexión con la base de datos!','Ya puede usar el bot con normalidad.')
+        .setFooter('Gracias por su paciencia.');
+
+    const client = new MongoClient(uri, { useNewUrlParser: true, reconnectTries: 10, reconnectInterval: 1000, autoReconnect: true });
+
+    client.connect(function(err)
+    {
+        if(err)
+        {
+            bot.mongostatus = false;
+            bot.channels.find('name','path-of-exile-bot').send(noConnectionMessage);
+            return;
+        }
+        bot.db = client.db('items'); 
+    });
+    
+    // Evento ejecutado cuando se pierde la conexión con la base de datos.
+    client.on('close', function ()
+    {
+        bot.mongostatus = false;
+        bot.channels.find('name','path-of-exile-bot').send(noConnectionMessage);
+    });
+
+    // Evento ejecutado cuando se recupera la conexión con la base de datos.
+    client.on('reconnect', function ()
+    {
+        bot.mongostatus = true;
+        bot.channels.find('name','path-of-exile-bot').send(connectionMessage);
+    });
+}
 
 bot.login(process.env.BOT_TOKEN);
