@@ -14,6 +14,7 @@ module.exports = {
             {
                 if(!message.client.mongostatus) return noConnection();
                 
+                const guildAlerts = message.client.db.collection('alerts');
                 const allItems = message.client.db.collection('all');
 
                 allItems.find({name:{$regex:`.*${itemName}`, $options:"i"}}).toArray(function(err, result)
@@ -22,7 +23,10 @@ module.exports = {
                     if(result.length < 1) return message.reply('No se ha encontrado el item buscado.');
                     if(result.length > 1) return tooManyItems(result);
 
-                    return message.reply(result[0].showName);
+                    guildAlerts.insertOne({guildId:message.guild.id, itemShowName:result[0].showName, itemName:result[0].name, class: result[0].class, refresh:15}, function(error, response) {
+                        if(error) return message.reply('No ha sido posible crear la alerta.');
+                        return message.reply('Alerta establecida con exito.');
+                    });
                 });
                 
             }
@@ -69,8 +73,8 @@ module.exports = {
                 color: 0xbf0a30,
                 description:'\u200b',
                 author: {
-                name: 'Se han encontrado varios resultados, selecciona el item deseado.',
-                icon_url: 'https://www.pathofexile.com/image/war/logo.png'
+                    name: 'Se han encontrado varios resultados, selecciona el item deseado.',
+                    icon_url: 'https://www.pathofexile.com/image/war/logo.png'
                 },
                 fields: [],
                 timestamp: new Date(),

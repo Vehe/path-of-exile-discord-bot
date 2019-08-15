@@ -1,5 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const Discord = require('discord.js');
+const request = require('request');
+const cron = require('node-cron');
 const bot = new Discord.Client();
 const fs = require('fs');
 
@@ -12,7 +14,6 @@ bot.db = null;
 
 // Mongo server
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PW}@${process.env.MONGO_URL}/?retryWrites=true&w=majority`;
-
 
 /**
  * Busca en la carpeta commands todos los archivos JS y los almacena en una collection.
@@ -27,6 +28,10 @@ for (const file of commandFiles) {
  * Se ejecuta cuando se conecta el bot al servidor.
  */
 bot.once('ready', () => {
+
+    bot.guilds.forEach(x => {
+        bot.alerts.set(x.id, []);
+    });
 
     if(!bot.guilds.first().channels.exists('name','path-of-exile-bot')) {
         bot.guilds.first().createChannel('path-of-exile-bot', { type: 'text' });
@@ -45,6 +50,10 @@ bot.once('ready', () => {
 
     connectToDB();
 
+    setTimeout(function() {
+        setupAlerts();
+    }, 2000);
+
 });
 
 /**
@@ -58,7 +67,7 @@ bot.on('message', async message => {
     const commandName = args.shift().toLowerCase();
 
     // Comprobamos si esta configurada la league.
-    if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
+    //if(bot.league == null && commandName != "config") return message.reply('Establece una league antes de continuar!');
     
     if (!bot.commands.has(commandName)) return;
     const command = bot.commands.get(commandName);
@@ -72,6 +81,69 @@ bot.on('message', async message => {
     }
 
 });
+
+/**
+ * Inicializa las alertas de los items de la base de datos.
+ * ! IMPROVE
+ */
+function setupAlerts()
+{
+    if(!bot.mongostatus) return;
+
+    const guildAlerts = bot.db.collection('alerts');
+
+    bot.guilds.forEach(x =>
+    {
+        const guildChannel = x.channels.find('name','path-of-exile-bot');
+        
+        guildAlerts.find({guildId:x.id}).toArray(function(err, res)
+        {
+            if(err) return;
+            var tmp = [];
+
+            res.forEach(i =>
+            {
+                var alertCron = cron.schedule(`*/${i.refresh} * * * *`, () => {
+
+                    request({url:`https://poe.ninja/api/data/${(i.class == 'Currency' || i.class == 'Fragments') ? 'currencyoverview':'itemoverview'}?league=Legion&type=${i.class.replace(/\s+/g,'')}`, json:true}, function (error, response, body) {
+                        if(error) return;
+                        body['lines'].forEach(n =>
+                        {
+                            if(n['detailsId'] == i.itemName)
+                            {
+                                var currencyID = n['pay']['pay_currency_id'];
+                                var itemImage = body['currencyDetails'][currencyID-1]['icon'].slice(0,-16);
+
+                                var tmpMsg = {
+                                    color: 0xeac100,
+                                    thumbnail: {
+                                        url: itemImage,
+                                    },
+                                    fields: [
+                                        {
+                                            name: `${x.emojis.find(emoji => emoji.name === i.class.replace(/\s+/g, ''))} ${i.itemShowName}`,
+                                            value: '\u200b'
+                                        }
+                                    ],
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `Esta alerta se volvera a ejecutar dentro de ${i.refresh} minutos.`
+                                    }
+                                }
+                                guildChannel.send({embed:tmpMsg});
+                            }
+                        });
+                    });
+                });
+
+                alertCron.alert = i.itemName;
+                tmp.push(alertCron);
+            });
+
+            bot.alerts.set(x.id, tmp);
+        });
+    });
+}
 
 /**
  * Iniciamos la conexión con la base de datos.
