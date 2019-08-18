@@ -6,6 +6,10 @@ module.exports = {
             channel.send(text)
         });
     },
+    sendToSpecificGuild: function(bot, guildId, text)
+    {
+        bot.guilds.get(guildId).channels.find(x => x.name === 'path-of-exile-bot').send(text);
+    },
     createPoeChannels: function(bot)
     {
         bot.guilds.forEach(guild => {

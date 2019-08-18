@@ -1,3 +1,4 @@
+const General = require('./general');
 const request = require('request');
 const cron = require('node-cron');
 
@@ -83,8 +84,21 @@ module.exports = {
         {
             const currencyDetails = data['currencyDetails'];
             const lines = data['lines'];
+
             const itemData = lines.find(item => item['detailsId'] == alert.itemName);
-            console.log(itemData);
+            const emoji = bot.guilds.get(alert.guildId).emojis.find(emoji => emoji.name === alert.class.replace(/\s+/g, ''));
+
+            var itemMsg = {
+                color: 0xeac100,
+                description: `${emoji} ${alert.itemShowName}`,
+                fields: [],
+                timestamp: new Date(),
+                footer: {
+                    text: `Esta alerta se ejecuta cada ${alert.refresh} minutos.`
+                }
+            };
+            
+            General.sendToSpecificGuild(bot, alert.guildId, {"embed":itemMsg});
         }
 
         /**
@@ -93,8 +107,21 @@ module.exports = {
         function parseDataItemOverview(data, alert)
         {
             const lines = data['lines'];
+
             const itemData = lines.find(item => item['detailsId'] == alert.itemName);
-            console.log(itemData);
+            const emoji = bot.guilds.get(alert.guildId).emojis.find(emoji => emoji.name === alert.class.replace(/\s+/g, ''));
+
+            var itemMsg = {
+                color: 0xeac100,
+                description: `${emoji} ${alert.itemShowName}`,
+                fields: [],
+                timestamp: new Date(),
+                footer: {
+                    text: `Esta alerta se ejecuta cada ${alert.refresh} minutos.`
+                }
+            };
+            
+            General.sendToSpecificGuild(bot, alert.guildId, {"embed":itemMsg});
         }
     }
 };
