@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const General = require('./src/general');
 const Alerts = require('./src/alerts');
 const Discord = require('discord.js');
 const bot = new Discord.Client();
@@ -26,11 +27,7 @@ for (const file of commandFiles) {
  */
 bot.once('ready', () => {
 
-    bot.guilds.forEach(guild => {
-        if(!guild.channels.some(x => x.name === 'path-of-exile-bot')) {
-            guild.createChannel('path-of-exile-bot', { type: 'text' });
-        }
-    });
+    General.createPoeChannels(bot);
 
     const configureMessage = new Discord.RichEmbed()
         .setColor('#bf0a30')
@@ -40,9 +37,7 @@ bot.once('ready', () => {
         .setFooter('Cuando acabes de configurarme podrás comenzar.');
 
     setTimeout(function() {
-        bot.channels.filter(w => w.name === 'path-of-exile-bot').forEach(channel => {
-            channel.send(configureMessage)
-        });
+        General.sendToAllGuilds(bot, configureMessage);
     }, 2000);
 
     connectToDB();
@@ -107,7 +102,7 @@ function connectToDB()
         if(err)
         {
             bot.mongostatus = false;
-            return bot.channels.find(w => w.name === 'path-of-exile-bot').send(noConnectionMessage);
+            return General.sendToAllGuilds(bot, noConnectionMessage);
         }
         bot.db = client.db('items'); 
     });
@@ -116,14 +111,14 @@ function connectToDB()
     client.on('close', function ()
     {
         bot.mongostatus = false;
-        bot.channels.find(w => w.name === 'path-of-exile-bot').send(noConnectionMessage);
+        General.sendToAllGuilds(bot, noConnectionMessage);
     });
 
     // Evento ejecutado cuando se recupera la conexión con la base de datos.
     client.on('reconnect', function ()
     {
         bot.mongostatus = true;
-        bot.channels.find(w => w.name === 'path-of-exile-bot').send(connectionMessage);
+        General.sendToAllGuilds(bot, connectionMessage);
     });
 }
 
