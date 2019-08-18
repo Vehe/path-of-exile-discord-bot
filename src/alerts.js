@@ -82,23 +82,34 @@ module.exports = {
          */
         function parseDataCurrencyOverview(data, alert)
         {
-            const currencyDetails = data['currencyDetails'];
-            const lines = data['lines'];
+            const itemData = data['lines'].find(item => item['detailsId'] == alert.itemName);
+            const itemDataCurrency = data['currencyDetails'].find(x => x.id == itemData['pay']['pay_currency_id']);
 
-            const itemData = lines.find(item => item['detailsId'] == alert.itemName);
+            const image = itemDataCurrency['icon'];
             const emoji = bot.guilds.get(alert.guildId).emojis.find(emoji => emoji.name === alert.class.replace(/\s+/g, ''));
-
-            var itemMsg = {
-                color: 0xeac100,
-                description: `${emoji} ${alert.itemShowName}`,
-                fields: [],
-                timestamp: new Date(),
-                footer: {
-                    text: `Esta alerta se ejecuta cada ${alert.refresh} minutos.`
-                }
-            };
             
-            General.sendToSpecificGuild(bot, alert.guildId, {"embed":itemMsg});
+            var fields = [
+                {
+                    name: 'Buy',
+                    value: `Last 7 days: ${itemData['receiveSparkLine']['totalChange']}, Pay: ${itemData['receive']['value']}, Get: 1.0`
+                },
+                {
+                    name: 'Sell',
+                    value: `Last 7 days: ${itemData['paySparkLine']['totalChange']}, Pay: 1.0, Get:`
+                }
+            ];
+
+            sendItemInfo(
+                {
+                    name:alert.itemShowName,
+                    emoji: emoji,
+                    image: image,
+                    guildId: alert.guildId,
+                    refresh: alert.refresh,
+                    fields: fields
+                }
+            );
+            
         }
 
         /**
@@ -106,22 +117,43 @@ module.exports = {
          */
         function parseDataItemOverview(data, alert)
         {
-            const lines = data['lines'];
+            const itemData = data['lines'].find(item => item['detailsId'] == alert.itemName);
 
-            const itemData = lines.find(item => item['detailsId'] == alert.itemName);
+            const image = itemData['icon'];
             const emoji = bot.guilds.get(alert.guildId).emojis.find(emoji => emoji.name === alert.class.replace(/\s+/g, ''));
 
+            /*
+            sendItemInfo(
+                {
+                    name:alert.itemShowName,
+                    emoji: emoji,
+                    image: image,
+                    guildId: alert.guildId,
+                    refresh: alert.refresh
+                }
+            );
+            */
+        }
+
+        /**
+         * Envia la información final al usuario.
+         */
+        function sendItemInfo({ name, emoji, image, guildId, refresh, fields })
+        {
             var itemMsg = {
                 color: 0xeac100,
-                description: `${emoji} ${alert.itemShowName}`,
-                fields: [],
+                description: `${emoji} ${name}`,
+                thumbnail: {
+                    url: image
+                },
+                fields: fields,
                 timestamp: new Date(),
                 footer: {
-                    text: `Esta alerta se ejecuta cada ${alert.refresh} minutos.`
+                    text: `Esta alerta se ejecuta cada ${refresh} minutos.`
                 }
             };
             
-            General.sendToSpecificGuild(bot, alert.guildId, {"embed":itemMsg});
+            General.sendToSpecificGuild(bot, guildId, {"embed":itemMsg});
         }
     }
 };

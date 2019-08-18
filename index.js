@@ -104,7 +104,7 @@ function connectToDB()
             bot.mongostatus = false;
             return General.sendToAllGuilds(bot, noConnectionMessage);
         }
-        bot.db = client.db('items'); 
+        bot.db = client.db('items');
     });
     
     // Evento ejecutado cuando se pierde la conexión con la base de datos.
